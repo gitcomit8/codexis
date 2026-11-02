@@ -1,0 +1,4 @@
+rust_input: crate::api
+rust_root: engine/crates/codexis-core
+dart_output: app/lib/src/rust
+rust_output: engine/crates/codexis-core/src/frb_generated.rs
