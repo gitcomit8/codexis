@@ -1,0 +1,72 @@
+:root {
+  --vp-c-brand-1: #087f72;
+  --vp-c-brand-2: #096e64;
+  --vp-c-brand-3: #07594f;
+  --vp-c-brand-soft: rgba(8, 127, 114, 0.12);
+  --vp-c-bg: #f7f8f5;
+  --vp-c-bg-alt: #eef1ed;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-border: #dce3dd;
+  --vp-c-divider: #e4e9e4;
+  --vp-c-text-1: #1b2826;
+  --vp-c-text-2: #53625e;
+  --vp-font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --vp-font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.dark {
+  --vp-c-brand-1: #65d6c5;
+  --vp-c-brand-2: #84e4d5;
+  --vp-c-brand-3: #a6f0e5;
+  --vp-c-brand-soft: rgba(101, 214, 197, 0.14);
+  --vp-c-bg: #111a19;
+  --vp-c-bg-alt: #172321;
+  --vp-c-bg-elv: #1c2926;
+  --vp-c-border: #31423e;
+  --vp-c-divider: #293a36;
+  --vp-c-text-1: #e6efeb;
+  --vp-c-text-2: #a8bab4;
+}
+
+.VPNavBarTitle .title { font-weight: 650; letter-spacing: -0.035em; }
+.VPNavBar { background-color: color-mix(in srgb, var(--vp-c-bg) 88%, transparent); backdrop-filter: blur(14px); }
+.VPHome { padding-bottom: 72px; }
+.VPHero .name { letter-spacing: -0.065em; }
+.VPHero .text { max-width: 760px; letter-spacing: -0.045em; }
+.VPHero .tagline { max-width: 650px; line-height: 1.65; }
+.VPFeature { border-radius: 14px; transition: border-color 160ms ease, transform 160ms ease; }
+.VPFeature:hover { border-color: var(--vp-c-brand-1); transform: translateY(-2px); }
+.VPDoc h1, .VPDoc h2 { letter-spacing: -0.035em; }
+.VPDoc a { text-underline-offset: 3px; }
+
+.codex-flow, .codex-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0 30px;
+}
+.codex-flow > div, .codex-status-card {
+  min-height: 136px;
+  padding: 20px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 14px;
+  background: var(--vp-c-bg-elv);
+}
+.codex-flow span, .codex-status-card strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--vp-c-brand-1);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.codex-flow strong { font-size: 1.04rem; letter-spacing: -0.02em; }
+.codex-flow p, .codex-status-card p { margin: 8px 0 0; color: var(--vp-c-text-2); font-size: 0.92rem; line-height: 1.55; }
+.codex-status-card:nth-child(3) strong { color: #c46a4f; }
+.dark .codex-status-card:nth-child(3) strong { color: #ff9c7c; }
+
+@media (max-width: 720px) {
+  .codex-flow, .codex-status-grid { grid-template-columns: 1fr; }
+  .codex-flow > div, .codex-status-card { min-height: 0; }
+}
