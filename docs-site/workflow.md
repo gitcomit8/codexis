@@ -1,6 +1,6 @@
 # Development workflow
 
-Codexis is still in its feasibility phase. Work from the repository root and keep commits small so each experiment can be reviewed independently.
+Codexis is an installable engineering build with local browsing and static indexing. Work from the repository root and keep commits small so each change can be reviewed independently.
 
 ## Change Rust bridge APIs
 
@@ -20,7 +20,7 @@ Generated files live under `app/lib/src/rust/` and `engine/crates/codexis-core/s
 # Rust
 cd engine
 cargo fmt --all --check
-cargo test -p codexis-core
+cargo test -p codexis-parser -p codexis-core
 
 # Flutter
 cd ../app
@@ -37,7 +37,15 @@ cd app
 flutter build apk --debug --target-platform android-arm64 --no-pub
 ```
 
-An APK build proves compilation and packaging. It does not prove process execution, server lifecycle behavior, LSP framing, or semantic navigation on Android. Record those as separate experiments in `docs/PHASE_0.md`.
+Before building an APK with the NASM server, build and stage the ARM64 server from its vendored source:
+
+```bash
+export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"
+./scripts/build-android-lsp-servers.sh
+./scripts/build-android-probe.sh
+```
+
+Then build `--debug` or `--release` as above. The APK packages the server and probe in native-library storage. A successful build proves compilation and packaging only. Android executable launch and server behavior still require a physical ARM64 device. `python3 scripts/test-asm-lsp-host.py` checks the host asm-lsp JSON-RPC path and same-file definition/references; it is not a device test.
 
 ## Build this documentation site
 
@@ -57,4 +65,5 @@ The site follows the app's implementation, not the architecture's intended futur
 - Preserve the read-only product mode.
 - Do not execute workspace build scripts in the default untrusted mode.
 - Keep Tree-sitter structure parsing separate from LSP semantic results.
-- Never report a server as supported from an initialize response alone; validate definitions and references in a real workspace.
+- Never report a server as supported from an initialize response alone; validate definitions and references in a real workspace and on Android.
+- Static Tree-sitter results must remain distinct from semantic LSP navigation.

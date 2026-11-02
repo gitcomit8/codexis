@@ -1,6 +1,6 @@
 # Environment and setup
 
-These instructions match the current repository layout and Phase 0 build. The Android minimum SDK is 29; the Flutter-generated Android project currently compiles and targets API 36.
+These instructions match the current repository layout. The Android minimum SDK is 29; Flutter/Gradle compiles against the installed API level (36 in the recorded environment).
 
 ## Required tools
 
@@ -26,7 +26,7 @@ export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"
 export PATH="$ANDROID_HOME/platform-tools:$PATH"
 ```
 
-The pinned Rust toolchain includes `aarch64-linux-android` and `x86_64-unknown-linux-gnu` (the latter is for host-side bridge tests). The app currently packages Android ARM64 only. Do not assume the host test target is Android x86_64 support.
+The pinned Rust toolchain includes `aarch64-linux-android` and `x86_64-unknown-linux-gnu` (for host bridge tests). Codexis packages Android ARM64 only. The NASM server build also requires Rust 1.98.0, NDK 28.2.13676358, and all locked crates already cached locally; it uses Cargo offline mode and makes no dependency downloads.
 
 ## Resolve app dependencies
 
@@ -50,6 +50,14 @@ flutter build apk --debug --target-platform android-arm64 --no-pub
 
 Output: `app/build/app/outputs/flutter-apk/app-debug.apk`.
 
+To package the NASM language server, build it before Gradle:
+
+```bash
+./scripts/build-android-lsp-servers.sh
+```
+
+The script stages `libasm-lsp.so` in Android's native library directory. For the debug-only process experiment, also run `./scripts/build-android-probe.sh`; the probe is not included in release variants. A server build is cross-compilation evidence only. Rust-analyzer is not currently bundled.
+
 ## Install on a connected device
 
 ```bash
@@ -57,4 +65,4 @@ adb devices -l
 adb install -r app/build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-The current codebase needs a physical ARM64 device test before the Rust bridge can be called verified on Android. The recorded host tests do not replace that step.
+The current codebase needs a physical ARM64 device test before native executable launch or server use can be called verified on Android. The recorded host tests do not replace that step. The release APK is currently signed using the Gradle debug signing key for sideloading; it is not signed for Play Store distribution.

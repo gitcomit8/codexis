@@ -1,73 +1,52 @@
 # Architecture
 
-Codexis is specified as an Android-first, read-only, local source-code intelligence application. The product architecture separates the Flutter user interface, Rust analysis/repository engine, and Android runtime responsibilities.
+Codexis is an Android-first, local, read-only source browser and code indexer. The current implementation is split across Flutter/Dart, Kotlin Android APIs, and Rust.
 
-## Implemented foundation
-
-The checked-in code currently has one Rust crate and a small Flutter screen. Flutter's Native Assets hook compiles and packages the Rust library for Android ARM64.
+## Implemented system
 
 ```text
-Flutter screen (app/lib/main.dart)
-        │ generated typed calls
-        ▼
-flutter_rust_bridge 2.13.0
-        │ FFI / Native Assets
-        ▼
-codexis-core (engine/crates/codexis-core)
-  ├─ RuntimeInfo structured response
-  ├─ async greet call with Rust error → Dart exception
-  └─ tracing to stderr
+Flutter UI (app/lib/main.dart)
+  ├─ repository/file browsing ── MethodChannel ── Kotlin RepositoryStore
+  └─ static symbol index ─────── flutter_rust_bridge ── Rust codexis-parser
+                                                           └─ Tree-sitter Rust + NASM
+
+Kotlin RuntimeProcessManager
+  └─ stdio JSON-RPC framing ── APK nativeLibraryDir ── asm-lsp (ARM64)
 ```
 
-This flow is exercised on the Linux host by `app/test/rust_bridge_test.dart`. The ARM64 library is present in the debug APK. The Android call has not yet been exercised on physical hardware.
+The Android repository store imports a SAF-selected local Git directory into app-private storage. The original directory is never edited. Dart exposes repository navigation and a read-only viewer; Rust scans supported files and returns normalized symbol locations. Tree-sitter is syntax-only and its results are explicitly labelled static symbols.
 
-## Intended system boundaries
+The Kotlin runtime layer has process lifecycle and JSON-RPC transport code. It packages an ARM64 asm-lsp binary and has a native executable probe. Neither executable has been launched on a physical Android device, and no Flutter screen currently invokes semantic LSP requests.
 
-The following is the approved direction, not a description of completed modules:
+## Responsibilities
 
-| Boundary | Intended responsibility | Current implementation |
-| --- | --- | --- |
-| Flutter / Dart | Repository browser, code viewer, navigation UI | Minimal runtime probe screen |
-| Kotlin Android runtime | Server process lifecycle, stdio streams, LSP JSON-RPC, lifecycle events | Flutter-generated `MainActivity`; no runtime host or process manager |
-| Rust engine | Git checkout, Tree-sitter parsing, indexing, SQLite storage | `codexis-core` bridge probe only |
-| Language servers | Semantic definitions and references for Rust, C/C++, and Go | None built or packaged |
+| Layer | Implemented responsibility |
+| --- | --- |
+| Flutter / Dart | Repository list, folder import, read-only browsing, source view, static symbol filtering/navigation |
+| Kotlin Android | SAF import/copy, private repository storage, process host, stdout/stderr events, JSON-RPC framing |
+| Rust | FRB API, Tree-sitter Rust/NASM parser, read-only repository index |
+| asm-lsp | ARM64 packaged binary; host-tested for NASM same-file definitions/references |
 
-The architectural separation is purposeful: Kotlin owns Android process APIs and LSP transport in Phase 0; Rust owns repository and indexing logic. The Dart layer receives normalized runtime/navigation results through channels and the Rust bridge.
+Rust semantic navigation is not available: rust-analyzer and the accompanying Cargo/rustc toolchain are not packaged. The tested asm-lsp workflow does not provide cross-file navigation. See [implementation status](/status) for evidence and limits.
 
 ## Product boundaries
 
-- **Read-only:** repository code can be browsed and analyzed; editing source is outside the product mode.
-- **On device:** file access, parsing, indexing, and language-server requests should remain local. Cloud infrastructure is out of scope.
-- **Trust modes:** untrusted workspaces allow static parsing and browsing. Full language-server operation requires explicit trust because Cargo build scripts, procedural macros, CMake configuration, and dependency resolution can execute project-controlled code.
-- **No implicit builds:** opening a repository must not run its build scripts or automatically download dependencies.
-- **Credential isolation:** Git credentials must not be placed in a language-server environment.
-
-These are product and security requirements. Enforcement in the app has not been implemented yet.
-
-## Planned analysis pipeline
-
-```text
-Local checkout → file discovery → Tree-sitter syntax index
-                                │
-                                ├─ static symbols and source locations
-                                │
-                                └─ trusted workspace → Kotlin LSP session
-                                                      → definition / references
-```
-
-Tree-sitter will provide structural parsing and local symbols. It is not a semantic compiler and must not be presented as a substitute for rust-analyzer, clangd, or gopls. Semantic navigation depends on each server's toolchain and project metadata: Cargo and Rust tools, a Clang compilation database and headers, or the Go command and module environment.
+- **Read-only:** Codexis imports a copy and exposes no source editing or write-back operation.
+- **Local operation:** source import, parsing, indexing, and runtime communication are designed to stay on device. The asm-lsp source is patched to avoid runtime network fetches.
+- **No implicit workspace builds:** opening a repository does not run Cargo build scripts or resolve dependencies.
+- **Trust:** repository build scripts and procedural macros can execute code. Current static browsing does not run them; a Rust LSP implementation will need explicit trust and offline dependency policy before activation.
 
 ## Repository map
 
 ```text
-app/                         Flutter UI, Android project, bridge bindings
-  hook/build.dart            Native Assets Rust build hook
-  integration_test/          Device-side bridge test source
-engine/                      Cargo workspace
-  crates/codexis-core/       Current Rust API and generated bridge
-docs/                        Phase 0 environment and experiment reports
-docs-site/                   This VitePress documentation site
-Codexis_Phase_0_Implementation_Specification.md  Approved architecture baseline
+app/                         Flutter UI and Android app
+  lib/                       UI and MethodChannel/FRB clients
+  android/app/src/main/      Kotlin host and native-library packaging
+engine/crates/codexis-core/  FRB API
+engine/crates/codexis-parser/ Tree-sitter Rust/NASM indexer
+android-runtime/servers/     Patched asm-lsp source
+scripts/                     Android server/probe builds and host LSP check
+docs-site/                   VitePress documentation
 ```
 
-See [development workflow](/workflow) for the concrete commands and [implementation status](/status) for the acceptance evidence.
+See [setup](/setup), [development workflow](/workflow), and [status](/status).

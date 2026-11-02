@@ -1,36 +1,22 @@
 # Android runtime feasibility
 
-Android library loading and launching an independent executable are different experiments. A successful Rust shared-library build does not imply that `ProcessBuilder` can launch an arbitrary server binary.
+Loading a Rust shared library and launching an independent language server are separate Android capabilities.
 
-## What is verified
+## Implemented and verified
 
-- Flutter packages `libcodexis_core.so` into the ARM64 APK.
-- The shared library builds with the stable NDK 28.2.13676358 selected through `ANDROID_NDK_HOME`.
-- The APK build succeeds on the development host.
-- The generated Flutter `MainActivity` exists, but no Kotlin process host, LSP transport, or executable probe is currently implemented.
+- The ARM64 APK packages `libcodexis_core.so`, `libasm-lsp.so`, and a debug-only native process probe.
+- Kotlin has code for SAF repository copying, stdio process management, separate stdout/stderr capture, request IDs, Content-Length framing, stop/restart state, and JSON-RPC request/notification transport.
+- The probe writes markers to both streams and exits with status 23. An Android integration test asserts those details.
+- The Kotlin frame codec has unit tests for UTF-8 byte lengths, partial reads, malformed frames, and truncated bodies.
 
-## What is not verified
+## Not verified on device
 
-- Loading and calling the packaged library on a physical Android phone.
-- Starting a separately packaged PIE executable from `nativeLibraryDir`.
-- stdout/stderr capture, graceful shutdown, forced termination, or restart.
-- Background/foreground recovery or process-kill recovery.
-- Any language server on Android.
+There is no connected physical ARM64 device in the development environment. APK packaging does not prove that `ProcessBuilder` can launch the native-library payload. Therefore executable launch, process restart/backgrounding, probe integration assertions, and the Android LSP runtime remain device-unverified.
 
-The environment had no attached device. Its only configured AVD is x86_64, while this prototype builds ARM64 only, so that emulator cannot exercise the APK.
+Android 10 and later restrict execution of app-controlled binaries in writable app-home directories for apps targeting API 29+. Codexis tests the APK-embedded `nativeLibraryDir` strategy and does not extract binaries into writable storage. See the [Android behavior change documentation](https://developer.android.com/about/versions/10/behavior-changes-10#execute-permission).
 
-## Executable restriction
+## Server evidence
 
-Android 10 and later disallow apps targeting API 29 or higher from calling `execve()` on app-controlled binaries located in the app's writable home directory. Android recommends loading executable code embedded in the APK. See the [Android 10 behavior changes](https://developer.android.com/about/versions/10/behavior-changes-10#execute-permission).
+The vendored asm-lsp 0.10.1 source builds for `aarch64-linux-android`; an offline patch removes its runtime HTTP documentation fetch. A host-side JSON-RPC test initializes the server and resolves NASM definitions/references within one file. Cross-file navigation is not established by that server workflow. Rust-analyzer is not bundled because a matching Android server plus `rustc`, Cargo, and offline dependency metadata have not been delivered.
 
-This rule is why a downloaded server in `filesDir/bin` cannot be assumed to work. The approved experiment is to package a small Android ARM64 PIE executable as a native artifact and attempt to launch it from the installed `nativeLibraryDir` on a real device. If that fails, investigate the documented alternatives: a shared library with a JNI entry point, an in-process server, or a purpose-built runtime host. Record the exact OS error and Android version; do not silently switch the server's execution model.
-
-## Language-server prerequisites
-
-| Server | Additional runtime inputs identified in the specification |
-| --- | --- |
-| rust-analyzer | Rust toolchain, `rustc`, Cargo metadata, workspace dependencies |
-| clangd | `compile_commands.json`, compiler configuration, project headers |
-| gopls | Go command, Go environment, module/workspace metadata |
-
-Each server needs an Android-compatible build and a working semantic test. A binary that starts or returns from `initialize` is insufficient; the acceptance flow must resolve a definition and references in a real project.
+Do not describe semantic navigation as supported until the app invokes requests and the complete flow succeeds on physical Android hardware. The app currently exposes Tree-sitter symbols as static syntax results.
