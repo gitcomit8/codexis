@@ -7,16 +7,50 @@ import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 
-            // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
+            // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`
 
 
             Future<void>  initializeLogging() => RustLib.instance.api.crateApiInitializeLogging();
+
+Future<List<IndexedSymbol>>  indexRepository({required String root }) => RustLib.instance.api.crateApiIndexRepository(root: root);
+
+Future<List<IndexedSymbol>>  parseSourceFile({required String path , required String source }) => RustLib.instance.api.crateApiParseSourceFile(path: path, source: source);
 
 Future<RuntimeInfo>  runtimeInfo() => RustLib.instance.api.crateApiRuntimeInfo();
 
 Future<String>  greet({required String name }) => RustLib.instance.api.crateApiGreet(name: name);
 
-            class RuntimeInfo  {
+            class IndexedSymbol  {
+                final String relativePath;
+final String language;
+final String name;
+final String kind;
+final int startLine;
+final int startColumn;
+final int endLine;
+final int endColumn;
+
+                const IndexedSymbol({required this.relativePath ,required this.language ,required this.name ,required this.kind ,required this.startLine ,required this.startColumn ,required this.endLine ,required this.endColumn ,});
+
+
+
+
+
+        @override
+        int get hashCode => relativePath.hashCode^language.hashCode^name.hashCode^kind.hashCode^startLine.hashCode^startColumn.hashCode^endLine.hashCode^endColumn.hashCode;
+
+
+
+        @override
+        bool operator ==(Object other) =>
+            identical(this, other) ||
+            other is IndexedSymbol &&
+                runtimeType == other.runtimeType
+                && relativePath == other.relativePath&& language == other.language&& name == other.name&& kind == other.kind&& startLine == other.startLine&& startColumn == other.startColumn&& endLine == other.endLine&& endColumn == other.endColumn;
+
+            }
+
+class RuntimeInfo  {
                 final String product;
 final String engine;
 final int version;

@@ -26,6 +26,28 @@ void main() {
         );
       }
       await expectLater(rust_api.greet(name: '  '), throwsA(isA<Exception>()));
+
+      final symbols = await rust_api.indexRepository(
+        root: '../engine/crates/codexis-parser/tests/fixtures',
+      );
+      expect(
+        symbols.any(
+          (symbol) =>
+              symbol.language == 'rust' &&
+              symbol.name == 'helper' &&
+              symbol.relativePath == 'rust/lib.rs',
+        ),
+        isTrue,
+      );
+      expect(
+        symbols.any(
+          (symbol) =>
+              symbol.language == 'nasm' &&
+              symbol.name == '_start' &&
+              symbol.relativePath == 'nasm/hello.asm',
+        ),
+        isTrue,
+      );
     },
   );
 }

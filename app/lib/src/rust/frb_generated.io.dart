@@ -27,6 +27,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 
 @protected String dco_decode_String(dynamic raw);
 
+@protected IndexedSymbol dco_decode_indexed_symbol(dynamic raw);
+
+@protected List<IndexedSymbol> dco_decode_list_indexed_symbol(dynamic raw);
+
 @protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
 @protected RuntimeInfo dco_decode_runtime_info(dynamic raw);
@@ -40,6 +44,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 @protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
 @protected String sse_decode_String(SseDeserializer deserializer);
+
+@protected IndexedSymbol sse_decode_indexed_symbol(SseDeserializer deserializer);
+
+@protected List<IndexedSymbol> sse_decode_list_indexed_symbol(SseDeserializer deserializer);
 
 @protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
@@ -58,6 +66,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 @protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer);
 
 @protected void sse_encode_String(String self, SseSerializer serializer);
+
+@protected void sse_encode_indexed_symbol(IndexedSymbol self, SseSerializer serializer);
+
+@protected void sse_encode_list_indexed_symbol(List<IndexedSymbol> self, SseSerializer serializer);
 
 @protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
 
