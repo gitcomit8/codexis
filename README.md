@@ -1,10 +1,10 @@
 # Codexis
 
-Codexis is an Android-first, read-only, local source-code intelligence prototype. Its UI is Flutter, its local engine is Rust, and Android runtime/process experiments live in Kotlin.
+Codexis is an Android-first, read-only local code browser and static indexer. Its Flutter interface imports copies of local Git repositories into app-private storage, Rust/Tree-sitter indexes Rust and x86-64 NASM symbols, and Kotlin provides Android storage and process APIs.
 
 ## Phase 0 status
 
-The Flutter-to-Rust foundation and ARM64 debug APK build are complete and host-tested. Physical-device execution and the parser, LSP, and repository workflows remain unimplemented. See [the implementation status](docs/PHASE_0_STATUS.md) and [the Codexis documentation site](docs-site/).
+The app, local repository workflow, static parser, and ARM64 APK build are implemented. The APK bundles asm-lsp and the Kotlin JSON-RPC host, but neither has been exercised on a physical Android device, and semantic requests are not yet connected to the Flutter UI. Rust-analyzer is not bundled. See [the implementation status](docs-site/status.md) and [the Codexis documentation site](docs-site/).
 
 ## Development
 
