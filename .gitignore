@@ -19,3 +19,5 @@ engine/target/
 # Local Android experiments
 android-runtime/bin/
 android-runtime/build/
+app/android/app/src/debug/jniLibs/arm64-v8a/libcodexis_probe.so
+app/android/app/src/main/jniLibs/arm64-v8a/libasm-lsp.so
