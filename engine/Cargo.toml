@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/codexis-core"]
+members = ["crates/codexis-core", "crates/codexis-parser", "crates/codexis-tree-sitter-nasm"]
 
 [workspace.dependencies]
 anyhow = "1"
@@ -11,3 +11,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
 flutter_rust_bridge = "=2.13.0"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tree-sitter = "0.27.1"
+tree-sitter-rust = "0.24.2"
+tree-sitter-language = "0.1.9"

@@ -1,0 +1,12 @@
+[package]
+name = "codexis-tree-sitter-nasm"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Vendored Tree-sitter NASM grammar with a current Rust language binding"
+
+[dependencies]
+tree-sitter-language.workspace = true
+
+[build-dependencies]
+cc = "1.1"

@@ -1,0 +1,11 @@
+[package]
+name = "codexis-parser"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+tree-sitter.workspace = true
+tree-sitter-rust.workspace = true
+codexis-tree-sitter-nasm = { path = "../codexis-tree-sitter-nasm" }
