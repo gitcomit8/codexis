@@ -4,6 +4,45 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    testImplementation("junit:junit:4.12")
+}
+
+// Flutter generates one plugin registrant for all Android variants. The
+// integration_test plugin is a dev dependency, so it is absent from release
+// compile classpaths on AGP 9; direct generated references then break release
+// builds. Keep debug registration for device tests and make release tolerant
+// when that class is not packaged.
+val makeReleasePluginRegistrantVariantSafe by tasks.registering {
+    doLast {
+        val registrant = file("src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java")
+        if (!registrant.isFile) return@doLast
+        val generated = registrant.readText()
+        val directRegistration =
+            "      flutterEngine.getPlugins().add(new dev.flutter.plugins.integration_test.IntegrationTestPlugin());"
+        if (generated.contains(directRegistration)) {
+            val reflectiveRegistration = """      Class<?> pluginClass = Class.forName("dev.flutter.plugins.integration_test.IntegrationTestPlugin");
+      io.flutter.embedding.engine.plugins.FlutterPlugin plugin =
+          (io.flutter.embedding.engine.plugins.FlutterPlugin) pluginClass.getDeclaredConstructor().newInstance();
+      flutterEngine.getPlugins().add(plugin);"""
+            val withReflection = generated.replace(directRegistration, reflectiveRegistration)
+                .replace(
+                    "    } catch (Exception e) {",
+                    "    } catch (ClassNotFoundException e) {\n" +
+                        "      // Expected for release variants without integration_test.\n" +
+                        "    } catch (Exception e) {",
+                )
+            registrant.writeText(withReflection)
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "compileReleaseJavaWithJavac") {
+        dependsOn(makeReleasePluginRegistrantVariantSafe)
+    }
+}
+
 android {
     namespace = "dev.codexis.codexis"
     compileSdk = flutter.compileSdkVersion
