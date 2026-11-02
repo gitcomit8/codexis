@@ -32,10 +32,10 @@ pub fn runtime_info() -> RuntimeInfo {
 }
 
 #[flutter_rust_bridge::frb]
-pub async fn greet(name: String) -> Result<String, String> {
+pub async fn greet(name: String) -> anyhow::Result<String> {
     let name = name.trim();
     if name.is_empty() {
-        return Err("Name must not be empty".to_owned());
+        anyhow::bail!("Name must not be empty");
     }
     Ok(format!("Hello, {name}. Rust is running locally."))
 }
@@ -55,8 +55,8 @@ mod tests {
     #[tokio::test]
     async fn greet_rejects_empty_name() {
         assert_eq!(
-            greet("  ".to_owned()).await,
-            Err("Name must not be empty".to_owned())
+            greet("  ".to_owned()).await.unwrap_err().to_string(),
+            "Name must not be empty"
         );
     }
 }
